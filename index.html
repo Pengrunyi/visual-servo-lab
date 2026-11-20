@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="视觉伺服实验台 Visual Servo Lab — a browser laboratory that compares IBVS and PBVS from Chaumette &amp; Hutchinson, IEEE RAM 2006."
+    />
+    <title>视觉伺服实验台 · Visual Servo Lab</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <header class="top">
+        <div class="brand">
+          <h1 data-i18n="title">视觉伺服实验台</h1>
+          <p class="subtitle">
+            <span data-i18n="subtitle">图像视觉伺服与位置视觉伺服的对照实验</span>
+            <span class="dot" aria-hidden="true">·</span>
+            <span class="cite" data-i18n="citation">控制律取自 Chaumette &amp; Hutchinson, IEEE RAM 2006</span>
+          </p>
+        </div>
+        <div class="top-actions">
+          <div class="seg" role="tablist" aria-label="method">
+            <button type="button" class="seg-btn is-active" data-method="ibvs">
+              <span data-i18n="methodIbvs">IBVS</span>
+            </button>
+            <button type="button" class="seg-btn" data-method="pbvs">
+              <span data-i18n="methodPbvs">PBVS</span>
+            </button>
+            <button type="button" class="seg-btn" data-method="compare">
+              <span data-i18n="methodCompare">对比</span>
+            </button>
+          </div>
+          <button type="button" class="lang-btn" id="lang-btn" data-i18n="langLabel">EN</button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel panel-image">
+          <header class="panel-h">
+            <h2 data-i18n="imagePlane">图像平面</h2>
+            <p data-i18n="imagePlaneHint">实心点为当前特征，空心方块为期望特征，细线为轨迹</p>
+          </header>
+          <canvas id="image-plane" class="fill-canvas"></canvas>
+        </section>
+
+        <section class="panel panel-scene">
+          <header class="panel-h">
+            <h2 data-i18n="scene3d">相机与目标</h2>
+            <p data-i18n="scene3dHint">拖动旋转视角，滚轮缩放</p>
+          </header>
+          <div id="scene-3d" class="scene-host"></div>
+        </section>
+
+        <section class="panel panel-plot">
+          <header class="panel-h">
+            <h2 data-i18n="errorPlot">误差曲线</h2>
+            <div class="metric-tabs" id="metric-tabs">
+              <button type="button" class="metric-btn is-active" data-metric="feature" data-i18n="errorFeature">
+                特征误差  ‖s − s*‖
+              </button>
+              <button type="button" class="metric-btn" data-metric="translation" data-i18n="errorTrans">
+                平移误差  ‖t‖  (m)
+              </button>
+              <button type="button" class="metric-btn" data-metric="rotation" data-i18n="errorRot">
+                旋转误差  ‖θu‖  (rad)
+              </button>
+              <button type="button" class="metric-btn" data-metric="distance" data-i18n="errorDist">
+                相机–目标距离  (m)
+              </button>
+            </div>
+          </header>
+          <canvas id="error-plot" class="fill-canvas"></canvas>
+        </section>
+
+        <aside class="panel panel-side">
+          <div class="side-block">
+            <h2 data-i18n="controls">控制</h2>
+            <div class="transport">
+              <button type="button" class="btn primary" id="btn-start" data-i18n="start">开始</button>
+              <button type="button" class="btn" id="btn-pause" data-i18n="pause">暂停</button>
+              <button type="button" class="btn" id="btn-reset" data-i18n="reset">重置</button>
+            </div>
+
+            <label class="field">
+              <span class="field-row">
+                <span data-i18n="gain">增益 λ</span>
+                <span class="mono" id="lambda-val">1.50</span>
+              </span>
+              <input id="lambda" type="range" min="0.2" max="4" step="0.05" value="1.5" />
+            </label>
+
+            <div class="field" id="depth-field">
+              <span class="field-label" data-i18n="depth">深度用于交互矩阵</span>
+              <div class="seg compact">
+                <button type="button" class="seg-btn is-active" data-depth="current" data-i18n="depthCurrent">
+                  当前深度 Z
+                </button>
+                <button type="button" class="seg-btn" data-depth="desired" data-i18n="depthDesired">
+                  期望深度 Z*
+                </button>
+              </div>
+              <p class="hint" data-i18n="depthHint">
+                IBVS 的交互矩阵需要每个点的深度。仿真里「当前深度」是精确值；「期望深度」用期望位姿处的常数 Z* 作近似，更接近真实系统里深度未知的情况。
+              </p>
+            </div>
+
+            <div class="field">
+              <span class="field-label" data-i18n="preset">初始位姿</span>
+              <div class="presets" id="presets"></div>
+            </div>
+          </div>
+
+          <div class="side-block readouts" id="readouts"></div>
+
+          <div class="side-block about">
+            <h2 data-i18n="aboutTitle">IBVS 与 PBVS</h2>
+            <p data-i18n="aboutBody">
+              IBVS 在图像平面上直接减小特征误差 e = s − s*。四个点的交互矩阵（图像雅可比）L 把相机速度和特征运动联系起来，控制律为 v = −λ L⁺ e。它不需要完整的三维位姿，图像轨迹也通常更短，但在大旋转时，特征会沿直线穿过像面中心，相机可能先后退再靠近——这是经典的「camera retreat」现象。切换到「大旋转」预设即可看到。
+            </p>
+            <p data-i18n="aboutBody2">
+              PBVS 先用当前与期望相机位姿的差（平移 t 与转角轴 θu）在笛卡尔空间里调节，控制律为 v = −λ Rᵀ t，ω = −λ L_{θu}⁻¹ θu。三维路径更直，图像轨迹却不一定短。两种方法都不是真实机器人控制器，只用于理解控制律本身。
+            </p>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="foot">
+        <span data-i18n="disclaimer">教学仿真，不是物理机器人控制器。</span>
+        <span class="foot-spacer"></span>
+        <span data-i18n="footer">MIT License · 2026 彭润一</span>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

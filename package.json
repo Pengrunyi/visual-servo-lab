@@ -1,0 +1,37 @@
+{
+  "name": "visual-servo-lab",
+  "version": "1.0.0",
+  "description": "Browser-based IBVS vs PBVS teaching laboratory / 视觉伺服实验台",
+  "author": "Peng Runyi",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pengrunyi/visual-servo-lab.git"
+  },
+  "homepage": "https://pengrunyi.github.io/visual-servo-lab/",
+  "keywords": [
+    "visual-servoing",
+    "IBVS",
+    "PBVS",
+    "robotics",
+    "computer-vision",
+    "education"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.170.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
+  }
+}
